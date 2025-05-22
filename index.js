@@ -4,39 +4,50 @@
 
 // Record and download videos with audio from IG stories:
 
-    (async () => {
-        const video = document.querySelector('video');
-        if (!video) {
-            console.log("No video was found.");
-            return;
-        }
+(async () => {
+    const video = document.querySelector('video');
+    if (!video) {
+        console.log("No video was found.");
+        return;
+    }
 
-        const stream = video.captureStream();
-        const recorder = new MediaRecorder(stream);
-        const chunks = [];
+    const stream = video.captureStream();
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
 
-        recorder.ondataavailable = (e) => chunks.push(e.data);
-        recorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'captured-instagram-story.webm';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            console.log("Download completed.");
-        };
+    recorder.ondataavailable = (e) => chunks.push(e.data);
+    recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'captured-instagram-story.webm';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log("Download completed.");
+    };
 
-        recorder.start();
-        console.log("Recording started. Play the video...");
+    recorder.start();
+    console.log("Recording started. Play the video...");
 
-        video.addEventListener('ended', () => {
+    // Stop recording when the video ends
+    video.addEventListener('ended', () => {
+        if (recorder.state === "recording") {
             recorder.stop();
             console.log("Recording stopped because video ended.");
-        });
-    })();
+        }
+    });
+
+    // Stop recording when the video is paused
+    video.addEventListener('pause', () => {
+        if (recorder.state === "recording") {
+            recorder.stop();
+            console.log("Recording stopped because video was paused.");
+        }
+    });
+})();
 
 
 // Capture and save frames from IG videos as images
